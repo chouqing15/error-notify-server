@@ -27,7 +27,7 @@ export class AppService {
     } catch (error) {
       return {
         code: 500,
-        data: error.message,
+        msg: error.message,
       };
     }
   }
