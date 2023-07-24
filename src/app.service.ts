@@ -46,6 +46,13 @@ export class AppService {
     try {
       const { systemName, ...content } = body;
 
+      if (!systemName) {
+        return {
+          code: 0,
+          msg: '系统出错',
+        };
+      }
+
       const targetDir = join(
         savePath,
         systemName,
