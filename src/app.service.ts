@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { promises, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import * as dayjs from 'dayjs';
 
 const fileExt = '.txt';
 const savePath = join(__dirname, '..', 'errorLog');
@@ -32,16 +33,34 @@ export class AppService {
     }
   }
 
-  checkAndCreateDirectory() {
-    !existsSync(savePath) && mkdirSync(savePath);
+  checkAndCreateDirectory(path: string) {
+    try {
+      !existsSync(path) && mkdirSync(path, { recursive: true });
+      return false;
+    } catch (error) {
+      return error;
+    }
   }
 
   async saveErrorLog(body) {
     try {
       const { systemName, ...content } = body;
-      this.checkAndCreateDirectory();
+
+      const targetDir = join(
+        savePath,
+        systemName,
+        dayjs().format('YYYY-MM-DD'),
+      );
+
+      const err = this.checkAndCreateDirectory(targetDir);
+      if (err) {
+        return {
+          code: 500,
+          msg: err.message,
+        };
+      }
       await promises.writeFile(
-        join(savePath, `${systemName}${fileExt}`),
+        join(targetDir, `${dayjs().format('YYYY-MM-DD-HH')}${fileExt}`),
         `${JSON.stringify(content)}\n\n`,
         {
           flag: 'a',
